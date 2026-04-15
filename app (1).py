@@ -1,4 +1,3 @@
-
 import streamlit as st
 import numpy as np
 import torch
@@ -6,7 +5,7 @@ import torch.nn as nn
 
 st.set_page_config(page_title="ChurnGuard | Bank Churn Predictor", page_icon="🏦", layout="wide")
 
-st.markdown('''
+st.markdown("""
 <style>
 html, body, [class*="css"] { font-family: "Segoe UI", sans-serif; }
 .main { background-color: #f0f4f8; }
@@ -33,9 +32,9 @@ html, body, [class*="css"] { font-family: "Segoe UI", sans-serif; }
 .compare-row .winner   { color: #16a34a; font-size: 11px; font-weight: 600; }
 .footer { text-align: center; color: #9ca3af; font-size: 11px; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
 </style>
-''', unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# ── Model definitions ──
+
 class DeepCNN(nn.Module):
     def __init__(self, input_size=19):
         super().__init__()
@@ -54,6 +53,7 @@ class DeepCNN(nn.Module):
     def forward(self, x):
         return self.classifier(self.features(x)).squeeze(1)
 
+
 class ResidualBlock(nn.Module):
     def __init__(self, channels):
         super().__init__()
@@ -67,6 +67,7 @@ class ResidualBlock(nn.Module):
     def forward(self, x):
         return self.relu(self.block(x) + x)
 
+
 class ResNetChurn(nn.Module):
     def __init__(self, input_size=19):
         super().__init__()
@@ -78,10 +79,11 @@ class ResNetChurn(nn.Module):
     def forward(self, x):
         return self.classifier(self.pool(self.layer2(self.layer1(self.stem(x))))).squeeze(1)
 
-# ── Load models ──
+
 @st.cache_resource
 def load_models():
-    cnn = DeepCNN(); res = ResNetChurn()
+    cnn = DeepCNN()
+    res = ResNetChurn()
     try:
         cnn.load_state_dict(torch.load("cnn_model.pt", map_location="cpu"))
         res.load_state_dict(torch.load("resnet_model.pt", map_location="cpu"))
@@ -93,7 +95,7 @@ def load_models():
 
 cnn_model, resnet_model, models_loaded = load_models()
 
-SCALER_MEAN = [46.32596030413745, 0.4709193245778612, 2.3462032191172115, 3.096573516342451, 1.4634146341463414, 2.8639281129653402, 0.17981633257628124, 35.928409203120374, 3.8125802310654686, 2.3411671768539546, 2.4553174681544387, 8631.953700479497, 1162.8140614199665, 7469.139638001796, 0.7599406538251061, 4404.086303939963, 64.85869457884863, 0.7122223761009566, 0.2748935518033951]
+SCALER_MEAN  = [46.32596030413745, 0.4709193245778612, 2.3462032191172115, 3.096573516342451, 1.4634146341463414, 2.8639281129653402, 0.17981633257628124, 35.928409203120374, 3.8125802310654686, 2.3411671768539546, 2.4553174681544387, 8631.953700479497, 1162.8140614199665, 7469.139638001796, 0.7599406538251061, 4404.086303939963, 64.85869457884863, 0.7122223761009566, 0.2748935518033951]
 SCALER_SCALE = [8.01641820891176, 0.4991535979205121, 1.2988442163662193, 1.834721863198188, 0.7377715199413283, 1.5046254656917517, 0.6930051891558661, 7.986022008096456, 1.5543311177215595, 1.0105725007637258, 1.1061705236740995, 9088.327897373294, 814.9470959025144, 9090.236477621178, 0.21919594653094407, 3396.9615230781264, 23.471411510261287, 0.23807433569767025, 0.27567785698217995]
 
 def predict(model, features):
@@ -102,24 +104,24 @@ def predict(model, features):
     with torch.no_grad():
         return torch.sigmoid(model(x)).item()
 
-# ── Header ──
-st.markdown(\'\'\'<div class="header-banner"><h1>🏦 ChurnGuard</h1><p>Bank Customer Churn Prediction &nbsp;|&nbsp; ResNet Model &nbsp;|&nbsp; Week 4 — AA5750</p></div>\'\'\', unsafe_allow_html=True)
+
+st.markdown('<div class="header-banner"><h1>🏦 ChurnGuard</h1><p>Bank Customer Churn Prediction &nbsp;|&nbsp; ResNet Model &nbsp;|&nbsp; Week 4 — AA5750</p></div>', unsafe_allow_html=True)
 
 if not models_loaded:
     st.info("Demo mode: model weights not found. Save them with torch.save() and rerun.", icon="ℹ️")
 
-st.markdown(\'<div class="section-title">Model Performance</div>\', unsafe_allow_html=True)
-st.markdown(\'\'\'<div class="metric-row">
+st.markdown('<div class="section-title">Model Performance</div>', unsafe_allow_html=True)
+st.markdown("""<div class="metric-row">
   <div class="metric-card"><div class="label">ResNet Accuracy</div><div class="value">95%</div><div class="sub">+1% vs Deep CNN</div></div>
   <div class="metric-card"><div class="label">Churn Recall</div><div class="value">78%</div><div class="sub">+3% vs Deep CNN</div></div>
   <div class="metric-card"><div class="label">ROC-AUC</div><div class="value">0.9796</div><div class="sub">+0.005 vs Deep CNN</div></div>
   <div class="metric-card"><div class="label">Churn Precision</div><div class="value">91%</div><div class="sub">+4% vs Deep CNN</div></div>
-</div>\'\'\', unsafe_allow_html=True)
+</div>""", unsafe_allow_html=True)
 
 left, right = st.columns([1.1, 1], gap="large")
 
 with left:
-    st.markdown(\'<div class="section-title">Customer Profile</div>\', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Customer Profile</div>', unsafe_allow_html=True)
     st.markdown("**Account Details**")
     c1, c2 = st.columns(2)
     age                      = c1.number_input("Customer Age", 18, 100, 45)
@@ -152,7 +154,7 @@ with left:
     run = st.button("Run Churn Prediction", use_container_width=True, type="primary")
 
 with right:
-    st.markdown(\'<div class="section-title">Prediction Results</div>\', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Prediction Results</div>', unsafe_allow_html=True)
     if run:
         edu_map     = {"College":0,"Doctorate":1,"Graduate":2,"High School":3,"Post-Graduate":4,"Uneducated":5,"Unknown":6}
         marital_map = {"Divorced":0,"Married":1,"Single":2,"Unknown":3}
@@ -162,29 +164,29 @@ with right:
                         months_inactive, contacts_count, credit_limit, total_revolving_bal,
                         avg_open_to_buy, total_amt_chng, total_trans_amt, total_trans_ct,
                         total_ct_chng, avg_utilization,
-                        0 if gender=="F" else 1, edu_map[education],
+                        0 if gender == "F" else 1, edu_map[education],
                         marital_map[marital_status], income_map[income_cat],
                         card_map[card_category]], dtype=np.float32)
         cnn_prob    = predict(cnn_model, raw)
         resnet_prob = predict(resnet_model, raw)
         churn       = resnet_prob > 0.5
         if churn:
-            st.markdown(f\'\'\'<div class="result-churn"><div class="result-label" style="color:#dc2626;">⚠ High Churn Risk</div><div style="font-size:2.2rem;font-weight:800;color:#dc2626;margin:8px 0;">{resnet_prob*100:.1f}%</div><div class="result-sub">ResNet churn probability</div></div>\'\'\', unsafe_allow_html=True)
+            st.markdown(f'<div class="result-churn"><div class="result-label" style="color:#dc2626;">⚠ High Churn Risk</div><div style="font-size:2.2rem;font-weight:800;color:#dc2626;margin:8px 0;">{resnet_prob*100:.1f}%</div><div class="result-sub">ResNet churn probability</div></div>', unsafe_allow_html=True)
         else:
-            st.markdown(f\'\'\'<div class="result-safe"><div class="result-label" style="color:#16a34a;">✓ Low Churn Risk</div><div style="font-size:2.2rem;font-weight:800;color:#16a34a;margin:8px 0;">{resnet_prob*100:.1f}%</div><div class="result-sub">ResNet churn probability</div></div>\'\'\', unsafe_allow_html=True)
-        st.markdown(\'<div class="section-title">Churn Probability</div>\', unsafe_allow_html=True)
+            st.markdown(f'<div class="result-safe"><div class="result-label" style="color:#16a34a;">✓ Low Churn Risk</div><div style="font-size:2.2rem;font-weight:800;color:#16a34a;margin:8px 0;">{resnet_prob*100:.1f}%</div><div class="result-sub">ResNet churn probability</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Churn Probability</div>', unsafe_allow_html=True)
         st.progress(resnet_prob, text=f"ResNet:   {resnet_prob*100:.1f}%")
         st.progress(cnn_prob,    text=f"Deep CNN: {cnn_prob*100:.1f}%")
-        st.markdown(\'<div class="section-title">CNN vs ResNet Comparison</div>\', unsafe_allow_html=True)
-        st.markdown(f\'\'\'<div style="background:white;border-radius:10px;padding:1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+        st.markdown('<div class="section-title">CNN vs ResNet Comparison</div>', unsafe_allow_html=True)
+        st.markdown(f"""<div style="background:white;border-radius:10px;padding:1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
           <div class="compare-row"><span class="metric-name">Metric</span><span class="cnn-val">Deep CNN</span><span class="res-val">ResNet</span><span class="winner">Better</span></div>
           <div class="compare-row"><span class="metric-name">Test Accuracy</span><span class="cnn-val">94%</span><span class="res-val">95%</span><span class="winner">ResNet ↑</span></div>
           <div class="compare-row"><span class="metric-name">Churn Recall</span><span class="cnn-val">75%</span><span class="res-val">78%</span><span class="winner">ResNet ↑</span></div>
           <div class="compare-row"><span class="metric-name">Churn Precision</span><span class="cnn-val">87%</span><span class="res-val">91%</span><span class="winner">ResNet ↑</span></div>
           <div class="compare-row"><span class="metric-name">ROC-AUC</span><span class="cnn-val">0.9745</span><span class="res-val">0.9796</span><span class="winner">ResNet ↑</span></div>
           <div class="compare-row" style="border:none;"><span class="metric-name">This prediction</span><span class="cnn-val">{cnn_prob*100:.1f}%</span><span class="res-val">{resnet_prob*100:.1f}%</span><span class="winner">Live</span></div>
-        </div><div class="badge-improvement" style="margin-top:0.75rem;">↑ ResNet is now 5% more accurate than the Week 3 baseline CNN</div>\'\'\', unsafe_allow_html=True)
-        st.markdown(\'<div class="section-title">Key Risk Factors</div>\', unsafe_allow_html=True)
+        </div><div class="badge-improvement" style="margin-top:0.75rem;">↑ ResNet is now 5% more accurate than the Week 3 baseline CNN</div>""", unsafe_allow_html=True)
+        st.markdown('<div class="section-title">Key Risk Factors</div>', unsafe_allow_html=True)
         risk_flags, safe_flags = [], []
         if months_inactive >= 3:          risk_flags.append("3+ months inactive")
         if contacts_count >= 4:           risk_flags.append("Frequent bank contacts")
@@ -197,16 +199,16 @@ with right:
         if avg_utilization >= 0.3:        safe_flags.append("Healthy utilization")
         if months_inactive <= 1:          safe_flags.append("Recently active")
         if risk_flags:
-            st.markdown(" ".join([f\'<span class="risk-pill">⚠ {f}</span>\' for f in risk_flags]), unsafe_allow_html=True)
+            st.markdown(" ".join([f'<span class="risk-pill">⚠ {f}</span>' for f in risk_flags]), unsafe_allow_html=True)
         if safe_flags:
-            st.markdown(" ".join([f\'<span class="safe-pill">✓ {f}</span>\' for f in safe_flags]), unsafe_allow_html=True)
+            st.markdown(" ".join([f'<span class="safe-pill">✓ {f}</span>' for f in safe_flags]), unsafe_allow_html=True)
         if not risk_flags and not safe_flags:
             st.markdown("No strong signals detected for this customer profile.")
     else:
-        st.markdown(\'\'\'<div style="background:white;border-radius:12px;padding:3rem 2rem;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+        st.markdown("""<div style="background:white;border-radius:12px;padding:3rem 2rem;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
           <div style="font-size:2.5rem;margin-bottom:1rem;">🏦</div>
           <div style="font-size:1rem;font-weight:600;color:#0a2342;">Fill in the customer profile and click Run Churn Prediction</div>
           <div style="font-size:0.85rem;color:#9ca3af;margin-top:0.5rem;">Results will appear here — confidence score, model comparison, and risk factors</div>
-        </div>\'\'\', unsafe_allow_html=True)
+        </div>""", unsafe_allow_html=True)
 
-st.markdown(\'\'\'<div class="footer">ChurnGuard &nbsp;|&nbsp; AA5750 Week 4 &nbsp;|&nbsp; Deep CNN (94%) vs ResNet (95%) &nbsp;|&nbsp; Built with PyTorch + Streamlit</div>\'\'\', unsafe_allow_html=True)
+st.markdown('<div class="footer">ChurnGuard &nbsp;|&nbsp; AA5750 Week 4 &nbsp;|&nbsp; Deep CNN (94%) vs ResNet (95%) &nbsp;|&nbsp; Built with PyTorch + Streamlit</div>', unsafe_allow_html=True)
