@@ -74,10 +74,15 @@ class ResNetChurn(nn.Module):
         self.stem = nn.Sequential(nn.Conv1d(1, 64, kernel_size=3, padding=1), nn.BatchNorm1d(64), nn.ReLU())
         self.layer1 = nn.Sequential(ResidualBlock(64), ResidualBlock(64))
         self.layer2 = nn.Sequential(nn.Conv1d(64, 128, kernel_size=1), ResidualBlock(128), ResidualBlock(128))
+        self.layer3 = nn.Sequential(nn.Conv1d(128, 256, kernel_size=1), ResidualBlock(256), ResidualBlock(256))
         self.pool = nn.AdaptiveAvgPool1d(1)
-        self.classifier = nn.Sequential(nn.Flatten(), nn.Linear(128, 64), nn.ReLU(), nn.Dropout(0.3), nn.Linear(64, 1))
+        self.classifier = nn.Sequential(nn.Flatten(), nn.Linear(256, 64), nn.ReLU(), nn.Dropout(0.3), nn.Linear(64, 1))
     def forward(self, x):
-        return self.classifier(self.pool(self.layer2(self.layer1(self.stem(x))))).squeeze(1)
+        x = self.stem(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        return self.classifier(self.pool(x)).squeeze(1)
 
 
 @st.cache_resource
